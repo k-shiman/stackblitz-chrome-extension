@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Tetris Game",
+  "name": "Stackblitz",
   "version": "1.0",
-  "description": "Play a minimalist Tetris with themes",
+  "description": "A minimalist block stacking game with themes",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

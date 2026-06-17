@@ -95,7 +95,7 @@ canvas {
   box-sizing: border-box;
 }
 
-#tetris {
+#game-canvas {
   width: 200px;
   height: 400px;
 }
@@ -132,12 +132,82 @@ canvas {
   color: rgba(255,255,255,0.5);
 }
 
-#next {
+#side-panels {
+  display: flex;
+  gap: 8px;
+  margin: 5px auto;
+  justify-content: center;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.panel-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+.panel-hint {
+  font-size: 8px;
+  opacity: 0.3;
+  letter-spacing: 0.5px;
+}
+
+#hold, #next {
   display: block;
-  margin: 0 auto 5px auto;
   width: 80px;
   height: 80px;
-  border: 2px solid #666;
+  border: 2px solid #555;
+  box-sizing: border-box;
+}
+
+#combo-popup {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  text-align: center;
+  z-index: 10;
+  display: none;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+
+#combo-popup.show {
+  display: block;
+  animation: comboAnim 1.4s ease-out forwards;
+}
+
+@keyframes comboAnim {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  70%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+}
+
+.combo-count {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 3px;
+}
+
+.combo-bonus {
+  display: block;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 1px;
+  margin-top: 2px;
 }
 
 #message {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tetris</title>
+  <title>Stackblitz</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="theme-default">
@@ -38,13 +38,26 @@
   </div>
 
   <div id="game-wrapper">
-    <canvas id="tetris" width="200" height="400"></canvas>
+    <canvas id="game-canvas" width="200" height="400"></canvas>
     <div id="pause-overlay">
       <span class="pause-title">PAUSED</span>
       <span class="pause-hint">Press P to resume</span>
     </div>
+    <div id="combo-popup"></div>
   </div>
-  <canvas id="next" width="80" height="80"></canvas>
+
+  <div id="side-panels">
+    <div class="panel">
+      <span class="panel-label">Hold</span>
+      <canvas id="hold" width="80" height="80"></canvas>
+      <span class="panel-hint">C key</span>
+    </div>
+    <div class="panel">
+      <span class="panel-label">Next</span>
+      <canvas id="next" width="80" height="80"></canvas>
+    </div>
+  </div>
+
   <div id="message"></div>
 
   <script src="script.js"></script>

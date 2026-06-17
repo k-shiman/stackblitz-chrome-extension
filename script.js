@@ -1,8 +1,10 @@
-const canvas = document.getElementById('tetris');
+const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
 const nextCanvas = document.getElementById("next");
 const nextCtx = nextCanvas.getContext("2d");
+const holdCanvas = document.getElementById("hold");
+const holdCtx = holdCanvas.getContext("2d");
 
 const scoreEl = document.getElementById('score');
 const highScoreEl = document.getElementById('high-score');
@@ -15,6 +17,7 @@ const btnTheme = document.getElementById('btn-theme');
 const btnPause = document.getElementById('btn-pause');
 const messageEl = document.getElementById('message');
 const pauseOverlay = document.getElementById('pause-overlay');
+const comboPopup = document.getElementById('combo-popup');
 
 const gridSize = 20;
 const cols = 10;
@@ -134,13 +137,15 @@ function arenaSweep() {
     scoreEl.textContent = score;
     updateSpeed();
   }
+  return swept;
 }
 
 function playerHardDrop() {
   player.pos.y = getGhostPosition().y;
+  canHold = true;
   merge(arena, player);
   playerReset();
-  arenaSweep();
+  handleLineClear(arenaSweep());
   dropCounter = 0;
 }
 
@@ -148,9 +153,10 @@ function playerDrop() {
   player.pos.y++;
   if (collide(arena, player)) {
     player.pos.y--;
+    canHold = true;
     merge(arena, player);
     playerReset();
-    arenaSweep();
+    handleLineClear(arenaSweep());
   }
   dropCounter = 0;
 }
@@ -208,7 +214,7 @@ function playerReset() {
   if (collide(arena, player)) {
     if (score > highScore) {
       highScore = score;
-      localStorage.setItem('tetris-high-score-' + currentDifficulty, highScore);
+      localStorage.setItem('stackblitz-high-score-' + currentDifficulty, highScore);
       highScoreEl.textContent = highScore;
       messageEl.textContent = "New Best Score!";
     } else {
@@ -236,6 +242,59 @@ function drawNext() {
       }
     });
   });
+}
+
+function drawHold() {
+  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  if (!holdPiece) return;
+  const mat = createPiece(holdPiece);
+  const colors = getCurrentShapeColors();
+  const color = colors[holdPiece];
+  const offsetX = Math.floor((4 - mat[0].length) / 2);
+  const offsetY = Math.floor((4 - mat.length) / 2);
+  holdCtx.globalAlpha = canHold ? 1 : 0.35;
+  mat.forEach((row, y) => {
+    row.forEach((val, x) => {
+      if (val) {
+        holdCtx.fillStyle = color;
+        holdCtx.fillRect((x + offsetX) * 20 + 1, (y + offsetY) * 20 + 1, 18, 18);
+      }
+    });
+  });
+  holdCtx.globalAlpha = 1;
+}
+
+function playerHold() {
+  if (!canHold || gameOver) return;
+  canHold = false;
+  if (holdPiece === null) {
+    holdPiece = player.type;
+    playerReset();
+  } else {
+    const temp = holdPiece;
+    holdPiece = player.type;
+    player.type = temp;
+    player.matrix = createPiece(temp);
+    player.pos.y = 0;
+    player.pos.x = ((cols - player.matrix[0].length) / 2) | 0;
+    if (collide(arena, player)) {
+      messageEl.textContent = "You Lost!";
+      messageEl.style.color = 'red';
+      gameOver = true;
+    }
+  }
+  drawHold();
+}
+
+function handleLineClear(swept) {
+  if (swept < 2) return;
+  const labels = ['', '', 'DOUBLE', 'TRIPLE', 'QUAD'];
+  const gained = [0, 0, 30, 70, 150][swept];
+  comboPopup.innerHTML =
+    `<span class="combo-count">${labels[swept]}</span><span class="combo-bonus">+${gained}</span>`;
+  comboPopup.classList.remove('show');
+  void comboPopup.offsetWidth;
+  comboPopup.classList.add('show');
 }
 
 function drawCell(x, y, type, alpha = 1) {
@@ -303,8 +362,10 @@ let linesCleared = 0;
 let lastTime = 0;
 let score = 0;
 let currentDifficulty = 'easy';
-let highScore = parseInt(localStorage.getItem('tetris-high-score-easy') || '0', 10);
+let highScore = parseInt(localStorage.getItem('stackblitz-high-score-easy') || '0', 10);
 let gameOver = false;
+let holdPiece = null;
+let canHold = true;
 let paused = false;
 let animationId = null;
 let pausedTime = 0;
@@ -334,6 +395,7 @@ document.addEventListener('keydown', event => {
   else if (event.key === 'ArrowDown') playerDrop();
   else if (event.key === 'w' || event.key === 'ArrowUp') playerRotate(1);
   else if (event.key === ' ') playerHardDrop();
+  else if (event.key === 'c' || event.key === 'C') playerHold();
 });
 
 btnEasy.addEventListener('click', () => setLevel(1000, 'easy'));
@@ -368,13 +430,14 @@ btnTheme.addEventListener('click', () => {
   document.body.classList.add(themes[currentTheme]);
   draw();
   drawNext();
+  drawHold();
 });
 
 function setLevel(ms, difficulty) {
   baseDropInterval = ms;
   dropInterval = ms;
   currentDifficulty = difficulty;
-  highScore = parseInt(localStorage.getItem('tetris-high-score-' + difficulty) || '0', 10);
+  highScore = parseInt(localStorage.getItem('stackblitz-high-score-' + difficulty) || '0', 10);
   resetGame();
 }
 
@@ -396,8 +459,11 @@ function resetGame() {
   levelEl.textContent = 1;
   bag = [];
   nextPiece = null;
+  holdPiece = null;
+  canHold = true;
   highScoreEl.textContent = highScore;
   playerReset();
+  drawHold();
   draw();
   startTime = performance.now();
   animationId = requestAnimationFrame(update);
