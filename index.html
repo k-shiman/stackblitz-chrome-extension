@@ -18,13 +18,32 @@
       <button id="btn-pause">Pause</button>
     </div>
     <div id="status">
-      <span>Score: <span id="score">0</span></span>
-      <span>Level: <span id="level">1</span></span>
-      <span>Time: <span id="timer">0</span>s</span>
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <span class="stat-value" id="score">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Best</span>
+        <span class="stat-value" id="high-score">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Level</span>
+        <span class="stat-value" id="level">1</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Time</span>
+        <span class="stat-value"><span id="timer">0</span>s</span>
+      </div>
     </div>
   </div>
 
-  <canvas id="tetris" width="200" height="400"></canvas>
+  <div id="game-wrapper">
+    <canvas id="tetris" width="200" height="400"></canvas>
+    <div id="pause-overlay">
+      <span class="pause-title">PAUSED</span>
+      <span class="pause-hint">Press P to resume</span>
+    </div>
+  </div>
   <canvas id="next" width="80" height="80"></canvas>
   <div id="message"></div>
 

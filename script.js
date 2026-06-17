@@ -5,6 +5,7 @@ const nextCanvas = document.getElementById("next");
 const nextCtx = nextCanvas.getContext("2d");
 
 const scoreEl = document.getElementById('score');
+const highScoreEl = document.getElementById('high-score');
 const levelEl = document.getElementById('level');
 const timerEl = document.getElementById('timer');
 const btnEasy = document.getElementById('btn-easy');
@@ -13,6 +14,7 @@ const btnHard = document.getElementById('btn-hard');
 const btnTheme = document.getElementById('btn-theme');
 const btnPause = document.getElementById('btn-pause');
 const messageEl = document.getElementById('message');
+const pauseOverlay = document.getElementById('pause-overlay');
 
 const gridSize = 20;
 const cols = 10;
@@ -204,7 +206,14 @@ function playerReset() {
   player.pos.y = 0;
   player.pos.x = ((cols - player.matrix[0].length) / 2) | 0;
   if (collide(arena, player)) {
-    messageEl.textContent = "You Lost!";
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('tetris-high-score-' + currentDifficulty, highScore);
+      highScoreEl.textContent = highScore;
+      messageEl.textContent = "New Best Score!";
+    } else {
+      messageEl.textContent = "You Lost!";
+    }
     messageEl.style.color = 'red';
     gameOver = true;
   }
@@ -293,6 +302,8 @@ let baseDropInterval = 1000;
 let linesCleared = 0;
 let lastTime = 0;
 let score = 0;
+let currentDifficulty = 'easy';
+let highScore = parseInt(localStorage.getItem('tetris-high-score-easy') || '0', 10);
 let gameOver = false;
 let paused = false;
 let animationId = null;
@@ -325,18 +336,29 @@ document.addEventListener('keydown', event => {
   else if (event.key === ' ') playerHardDrop();
 });
 
-btnEasy.addEventListener('click', () => setLevel(1000));
-btnMedium.addEventListener('click', () => setLevel(500));
-btnHard.addEventListener('click', () => setLevel(200));
-btnPause.addEventListener('click', () => {
+btnEasy.addEventListener('click', () => setLevel(1000, 'easy'));
+btnMedium.addEventListener('click', () => setLevel(500, 'medium'));
+btnHard.addEventListener('click', () => setLevel(200, 'hard'));
+function togglePause() {
+  if (gameOver) return;
   paused = !paused;
   if (paused) {
     pauseStart = performance.now();
+    pauseOverlay.classList.add('visible');
+    btnPause.textContent = 'Resume';
   } else {
     pausedTime += performance.now() - pauseStart;
+    pauseOverlay.classList.remove('visible');
+    btnPause.textContent = 'Pause';
     lastTime = 0;
     animationId = requestAnimationFrame(update);
   }
+}
+
+btnPause.addEventListener('click', togglePause);
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'p' || event.key === 'P') togglePause();
 });
 const themes = ['theme-default', 'theme-light', 'theme-neon', 'theme-retro', 'theme-matrix'];
 let currentTheme = 0;
@@ -348,21 +370,24 @@ btnTheme.addEventListener('click', () => {
   drawNext();
 });
 
-function setLevel(ms) {
+function setLevel(ms, difficulty) {
   baseDropInterval = ms;
   dropInterval = ms;
+  currentDifficulty = difficulty;
+  highScore = parseInt(localStorage.getItem('tetris-high-score-' + difficulty) || '0', 10);
   resetGame();
 }
 
 function resetGame() {
   cancelAnimationFrame(animationId);
   arena.forEach(row => row.fill(null));
-  playerReset();
   score = 0;
   scoreEl.textContent = score;
   messageEl.textContent = '';
   gameOver = false;
   paused = false;
+  pauseOverlay.classList.remove('visible');
+  btnPause.textContent = 'Pause';
   lastTime = 0;
   pausedTime = 0;
   pauseStart = 0;
@@ -371,6 +396,8 @@ function resetGame() {
   levelEl.textContent = 1;
   bag = [];
   nextPiece = null;
+  highScoreEl.textContent = highScore;
+  playerReset();
   draw();
   startTime = performance.now();
   animationId = requestAnimationFrame(update);
