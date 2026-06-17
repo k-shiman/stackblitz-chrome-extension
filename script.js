@@ -266,6 +266,7 @@ let lastTime = 0;
 let score = 0;
 let gameOver = false;
 let paused = false;
+let animationId = null;
 
 function update(time = 0) {
   if (gameOver || paused) return;
@@ -275,7 +276,7 @@ function update(time = 0) {
   if (dropCounter > dropInterval) playerDrop();
   draw();
   timerEl.textContent = Math.floor((time - startTime) / 1000);
-  requestAnimationFrame(update);
+  animationId = requestAnimationFrame(update);
 }
 
 document.addEventListener('keydown', event => {
@@ -291,7 +292,10 @@ btnMedium.addEventListener('click', () => setLevel(500));
 btnHard.addEventListener('click', () => setLevel(200));
 btnPause.addEventListener('click', () => {
   paused = !paused;
-  if (!paused) requestAnimationFrame(update);
+  if (!paused) {
+    lastTime = 0;
+    animationId = requestAnimationFrame(update);
+  }
 });
 const themes = ['theme-default', 'theme-light', 'theme-neon', 'theme-retro', 'theme-matrix'];
 let currentTheme = 0;
@@ -309,6 +313,7 @@ function setLevel(ms) {
 }
 
 function resetGame() {
+  cancelAnimationFrame(animationId);
   arena.forEach(row => row.fill(null));
   playerReset();
   score = 0;
@@ -318,7 +323,7 @@ function resetGame() {
   lastTime = 0;
   draw();
   startTime = performance.now();
-  requestAnimationFrame(update);
+  animationId = requestAnimationFrame(update);
 }
 
 
