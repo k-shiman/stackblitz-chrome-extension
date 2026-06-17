@@ -267,6 +267,8 @@ let score = 0;
 let gameOver = false;
 let paused = false;
 let animationId = null;
+let pausedTime = 0;
+let pauseStart = 0;
 
 function update(time = 0) {
   if (gameOver || paused) return;
@@ -275,7 +277,7 @@ function update(time = 0) {
   dropCounter += delta;
   if (dropCounter > dropInterval) playerDrop();
   draw();
-  timerEl.textContent = Math.floor((time - startTime) / 1000);
+  timerEl.textContent = Math.floor((time - startTime - pausedTime) / 1000);
   animationId = requestAnimationFrame(update);
 }
 
@@ -292,7 +294,10 @@ btnMedium.addEventListener('click', () => setLevel(500));
 btnHard.addEventListener('click', () => setLevel(200));
 btnPause.addEventListener('click', () => {
   paused = !paused;
-  if (!paused) {
+  if (paused) {
+    pauseStart = performance.now();
+  } else {
+    pausedTime += performance.now() - pauseStart;
     lastTime = 0;
     animationId = requestAnimationFrame(update);
   }
@@ -320,7 +325,10 @@ function resetGame() {
   scoreEl.textContent = score;
   messageEl.textContent = '';
   gameOver = false;
+  paused = false;
   lastTime = 0;
+  pausedTime = 0;
+  pauseStart = 0;
   draw();
   startTime = performance.now();
   animationId = requestAnimationFrame(update);
