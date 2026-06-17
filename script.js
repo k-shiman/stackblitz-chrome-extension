@@ -127,6 +127,14 @@ function arenaSweep() {
   }
 }
 
+function playerHardDrop() {
+  player.pos.y = getGhostPosition().y;
+  merge(arena, player);
+  playerReset();
+  arenaSweep();
+  dropCounter = 0;
+}
+
 function playerDrop() {
   player.pos.y++;
   if (collide(arena, player)) {
@@ -287,6 +295,7 @@ document.addEventListener('keydown', event => {
   else if (event.key === 'ArrowRight') playerMove(1);
   else if (event.key === 'ArrowDown') playerDrop();
   else if (event.key === 'w' || event.key === 'ArrowUp') playerRotate(1);
+  else if (event.key === ' ') playerHardDrop();
 });
 
 btnEasy.addEventListener('click', () => setLevel(1000));
@@ -336,7 +345,7 @@ function resetGame() {
 
 
 window.addEventListener("keydown", e => {
-  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
     e.preventDefault();
   }
 }, { passive: false });
