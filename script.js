@@ -5,6 +5,7 @@ const nextCanvas = document.getElementById("next");
 const nextCtx = nextCanvas.getContext("2d");
 
 const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
 const timerEl = document.getElementById('timer');
 const btnEasy = document.getElementById('btn-easy');
 const btnMedium = document.getElementById('btn-medium');
@@ -114,6 +115,7 @@ function merge(arena, player) {
 
 function arenaSweep() {
   let rowCount = 1;
+  let swept = 0;
   outer: for (let y = arena.length - 1; y >= 0; --y) {
     for (let x = 0; x < arena[y].length; ++x) {
       if (arena[y][x] === null) continue outer;
@@ -122,8 +124,13 @@ function arenaSweep() {
     arena.unshift(new Array(cols).fill(null));
     score += rowCount * 10;
     rowCount *= 2;
-    scoreEl.textContent = score;
+    swept++;
     ++y;
+  }
+  if (swept > 0) {
+    linesCleared += swept;
+    scoreEl.textContent = score;
+    updateSpeed();
   }
 }
 
@@ -176,10 +183,22 @@ function playerRotate(dir) {
 }
 
 let nextPiece = null;
+let bag = [];
+
+function getNextFromBag() {
+  if (bag.length === 0) {
+    bag = [...shapes];
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+  }
+  return bag.pop();
+}
 
 function playerReset() {
-  const type = nextPiece || shapes[Math.floor(Math.random() * shapes.length)];
-  nextPiece = shapes[Math.floor(Math.random() * shapes.length)];
+  const type = nextPiece || getNextFromBag();
+  nextPiece = getNextFromBag();
   player.type = type;
   player.matrix = createPiece(type);
   player.pos.y = 0;
@@ -270,6 +289,8 @@ function draw() {
 
 let dropCounter = 0;
 let dropInterval = 1000;
+let baseDropInterval = 1000;
+let linesCleared = 0;
 let lastTime = 0;
 let score = 0;
 let gameOver = false;
@@ -277,6 +298,12 @@ let paused = false;
 let animationId = null;
 let pausedTime = 0;
 let pauseStart = 0;
+
+function updateSpeed() {
+  const level = Math.floor(linesCleared / 10);
+  dropInterval = Math.max(50, Math.round(baseDropInterval * Math.pow(0.85, level)));
+  levelEl.textContent = level + 1;
+}
 
 function update(time = 0) {
   if (gameOver || paused) return;
@@ -322,6 +349,7 @@ btnTheme.addEventListener('click', () => {
 });
 
 function setLevel(ms) {
+  baseDropInterval = ms;
   dropInterval = ms;
   resetGame();
 }
@@ -338,6 +366,11 @@ function resetGame() {
   lastTime = 0;
   pausedTime = 0;
   pauseStart = 0;
+  linesCleared = 0;
+  dropInterval = baseDropInterval;
+  levelEl.textContent = 1;
+  bag = [];
+  nextPiece = null;
   draw();
   startTime = performance.now();
   animationId = requestAnimationFrame(update);
