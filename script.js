@@ -18,6 +18,9 @@ const btnPause = document.getElementById('btn-pause');
 const messageEl = document.getElementById('message');
 const pauseOverlay = document.getElementById('pause-overlay');
 const infoOverlay = document.getElementById('info-overlay');
+const gameoverOverlay = document.getElementById('gameover-overlay');
+const gameoverTitle = document.getElementById('gameover-title');
+const gameoverScore = document.getElementById('gameover-score');
 const comboPopup = document.getElementById('combo-popup');
 const btnRestart = document.getElementById('btn-restart');
 const btnInfo = document.getElementById('btn-info');
@@ -219,11 +222,12 @@ function playerReset() {
       highScore = score;
       localStorage.setItem('stackblitz-high-score-' + currentDifficulty, highScore);
       highScoreEl.textContent = highScore;
-      messageEl.textContent = "New Best Score!";
+      gameoverTitle.textContent = 'NEW BEST!';
     } else {
-      messageEl.textContent = "You Lost!";
+      gameoverTitle.textContent = 'GAME OVER';
     }
-    messageEl.style.color = 'red';
+    gameoverScore.textContent = score;
+    gameoverOverlay.classList.add('visible');
     gameOver = true;
   }
   drawNext();
@@ -282,8 +286,9 @@ function playerHold() {
     player.pos.y = 0;
     player.pos.x = ((cols - player.matrix[0].length) / 2) | 0;
     if (collide(arena, player)) {
-      messageEl.textContent = "You Lost!";
-      messageEl.style.color = 'red';
+      gameoverTitle.textContent = 'GAME OVER';
+      gameoverScore.textContent = score;
+      gameoverOverlay.classList.add('visible');
       gameOver = true;
     }
   }
@@ -499,6 +504,8 @@ function resetGame() {
   showingInfo = false;
   pauseOverlay.classList.remove('visible');
   infoOverlay.classList.remove('visible');
+  gameoverOverlay.classList.remove('visible');
+  messageEl.textContent = '';
   btnPause.textContent = 'Pause';
   lastTime = 0;
   pausedTime = 0;
