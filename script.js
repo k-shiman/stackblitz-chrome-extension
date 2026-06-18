@@ -17,9 +17,12 @@ const btnTheme = document.getElementById('btn-theme');
 const btnPause = document.getElementById('btn-pause');
 const messageEl = document.getElementById('message');
 const pauseOverlay = document.getElementById('pause-overlay');
+const infoOverlay = document.getElementById('info-overlay');
 const comboPopup = document.getElementById('combo-popup');
+const btnRestart = document.getElementById('btn-restart');
+const btnInfo = document.getElementById('btn-info');
 
-const gridSize = 20;
+const gridSize = 18;
 const cols = 10;
 const rows = 20;
 canvas.width = gridSize * cols;
@@ -231,14 +234,14 @@ function drawNext() {
   const mat = createPiece(nextPiece);
   const colors = getCurrentShapeColors();
   const color = colors[nextPiece];
-  const startX = Math.floor((nextCanvas.width - mat[0].length * 20) / 2);
-  const startY = Math.floor((nextCanvas.height - mat.length * 20) / 2);
-
+  const cell = Math.floor(nextCanvas.width / 4);
+  const startX = Math.floor((nextCanvas.width - mat[0].length * cell) / 2);
+  const startY = Math.floor((nextCanvas.height - mat.length * cell) / 2);
   mat.forEach((row, y) => {
     row.forEach((val, x) => {
       if (val) {
         nextCtx.fillStyle = color;
-        nextCtx.fillRect(startX + x * 20 + 1, startY + y * 20 + 1, 18, 18);
+        nextCtx.fillRect(startX + x * cell + 1, startY + y * cell + 1, cell - 2, cell - 2);
       }
     });
   });
@@ -250,14 +253,15 @@ function drawHold() {
   const mat = createPiece(holdPiece);
   const colors = getCurrentShapeColors();
   const color = colors[holdPiece];
-  const startX = Math.floor((holdCanvas.width - mat[0].length * 20) / 2);
-  const startY = Math.floor((holdCanvas.height - mat.length * 20) / 2);
+  const cell = Math.floor(holdCanvas.width / 4);
+  const startX = Math.floor((holdCanvas.width - mat[0].length * cell) / 2);
+  const startY = Math.floor((holdCanvas.height - mat.length * cell) / 2);
   holdCtx.globalAlpha = canHold ? 1 : 0.35;
   mat.forEach((row, y) => {
     row.forEach((val, x) => {
       if (val) {
         holdCtx.fillStyle = color;
-        holdCtx.fillRect(startX + x * 20 + 1, startY + y * 20 + 1, 18, 18);
+        holdCtx.fillRect(startX + x * cell + 1, startY + y * cell + 1, cell - 2, cell - 2);
       }
     });
   });
@@ -366,6 +370,7 @@ let highScore = parseInt(localStorage.getItem('stackblitz-high-score-easy') || '
 let gameOver = false;
 let holdPiece = null;
 let canHold = true;
+let showingInfo = false;
 let paused = false;
 let animationId = null;
 let pausedTime = 0;
@@ -378,7 +383,7 @@ function updateSpeed() {
 }
 
 function update(time = 0) {
-  if (gameOver || paused) return;
+  if (gameOver || paused || showingInfo) return;
   const delta = time - lastTime;
   lastTime = time;
   dropCounter += delta;
@@ -389,7 +394,7 @@ function update(time = 0) {
 }
 
 document.addEventListener('keydown', event => {
-  if (gameOver || paused) return;
+  if (gameOver || paused || showingInfo) return;
   if (event.key === 'ArrowLeft') playerMove(-1);
   else if (event.key === 'ArrowRight') playerMove(1);
   else if (event.key === 'ArrowDown') playerDrop();
@@ -401,6 +406,20 @@ document.addEventListener('keydown', event => {
 btnEasy.addEventListener('click', () => setLevel(1000, 'easy'));
 btnMedium.addEventListener('click', () => setLevel(500, 'medium'));
 btnHard.addEventListener('click', () => setLevel(200, 'hard'));
+function toggleInfo() {
+  if (gameOver) return;
+  showingInfo = !showingInfo;
+  if (showingInfo) {
+    infoOverlay.classList.add('visible');
+  } else {
+    infoOverlay.classList.remove('visible');
+    if (!paused) {
+      lastTime = 0;
+      animationId = requestAnimationFrame(update);
+    }
+  }
+}
+
 function togglePause() {
   if (gameOver) return;
   paused = !paused;
@@ -418,9 +437,33 @@ function togglePause() {
 }
 
 btnPause.addEventListener('click', togglePause);
+btnInfo.addEventListener('click', toggleInfo);
+
+let restartPending = false;
+let restartTimer = null;
+
+btnRestart.addEventListener('click', () => {
+  if (!restartPending) {
+    restartPending = true;
+    btnRestart.classList.add('confirm');
+    btnRestart.textContent = '✓';
+    restartTimer = setTimeout(() => {
+      restartPending = false;
+      btnRestart.classList.remove('confirm');
+      btnRestart.textContent = '↺';
+    }, 2500);
+  } else {
+    clearTimeout(restartTimer);
+    restartPending = false;
+    btnRestart.classList.remove('confirm');
+    btnRestart.textContent = '↺';
+    resetGame();
+  }
+});
 
 document.addEventListener('keydown', event => {
   if (event.key === 'p' || event.key === 'P') togglePause();
+  if (event.key === 'i' || event.key === 'I') toggleInfo();
 });
 const themes = ['theme-default', 'theme-light', 'theme-neon', 'theme-retro', 'theme-matrix'];
 let currentTheme = 0;
@@ -447,9 +490,15 @@ function resetGame() {
   score = 0;
   scoreEl.textContent = score;
   messageEl.textContent = '';
+  clearTimeout(restartTimer);
+  restartPending = false;
+  btnRestart.classList.remove('confirm');
+  btnRestart.textContent = '↺';
   gameOver = false;
   paused = false;
+  showingInfo = false;
   pauseOverlay.classList.remove('visible');
+  infoOverlay.classList.remove('visible');
   btnPause.textContent = 'Pause';
   lastTime = 0;
   pausedTime = 0;

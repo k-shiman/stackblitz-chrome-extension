@@ -21,20 +21,65 @@
       <button id="btn-hard">Hard</button>
     </div>
     <div class="btn-group">
-      <button id="btn-theme">Change Theme</button>
+      <button id="btn-theme">Theme</button>
       <button id="btn-pause">Pause</button>
+      <button id="btn-restart" title="Restart">↺</button>
+      <button id="btn-info" title="Controls">?</button>
     </div>
     <div id="status">
-      <span>Score: <span id="score">0</span></span>
-      <span id="message">You Lost!</span>
-      <span>Time: <span id="timer">0</span>s</span>
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <span class="stat-value" id="score">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Best</span>
+        <span class="stat-value" id="high-score">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Level</span>
+        <span class="stat-value" id="level">1</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Time</span>
+        <span class="stat-value"><span id="timer">0</span>s</span>
+      </div>
     </div>
-
   </div>
 
-  <canvas id="game-canvas" width="200" height="400"></canvas>
-  <canvas id="next" width="80" height="80"></canvas>
- 
+  <div id="game-wrapper">
+    <canvas id="game-canvas" width="180" height="360"></canvas>
+    <div id="pause-overlay">
+      <span class="pause-title">PAUSED</span>
+      <span class="pause-hint">Press P to resume</span>
+    </div>
+    <div id="info-overlay">
+      <span class="info-title">CONTROLS</span>
+      <div class="info-grid">
+        <span>← →</span><span>Move</span>
+        <span>↑ / W</span><span>Rotate</span>
+        <span>↓</span><span>Soft drop</span>
+        <span>Space</span><span>Hard drop</span>
+        <span>C</span><span>Hold piece</span>
+        <span>P</span><span>Pause</span>
+        <span>I</span><span>Controls</span>
+      </div>
+      <span class="info-hint">Press I to close</span>
+    </div>
+    <div id="combo-popup"></div>
+  </div>
+
+  <div id="side-panels">
+    <div class="panel">
+      <span class="panel-label">Hold <span class="panel-key">C</span></span>
+      <canvas id="hold" width="64" height="64"></canvas>
+    </div>
+    <div class="panel">
+      <span class="panel-label">Next</span>
+      <canvas id="next" width="64" height="64"></canvas>
+    </div>
+  </div>
+
+  <div id="message"></div>
 
   <script src="script.js"></script>
 </body>
