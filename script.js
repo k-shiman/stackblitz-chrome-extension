@@ -231,14 +231,14 @@ function drawNext() {
   const mat = createPiece(nextPiece);
   const colors = getCurrentShapeColors();
   const color = colors[nextPiece];
-  const offsetX = Math.floor((4 - mat[0].length) / 2);
-  const offsetY = Math.floor((4 - mat.length) / 2);
+  const startX = Math.floor((nextCanvas.width - mat[0].length * 20) / 2);
+  const startY = Math.floor((nextCanvas.height - mat.length * 20) / 2);
 
   mat.forEach((row, y) => {
     row.forEach((val, x) => {
       if (val) {
         nextCtx.fillStyle = color;
-        nextCtx.fillRect((x + offsetX) * 20 + 1, (y + offsetY) * 20 + 1, 18, 18);
+        nextCtx.fillRect(startX + x * 20 + 1, startY + y * 20 + 1, 18, 18);
       }
     });
   });
@@ -250,14 +250,14 @@ function drawHold() {
   const mat = createPiece(holdPiece);
   const colors = getCurrentShapeColors();
   const color = colors[holdPiece];
-  const offsetX = Math.floor((4 - mat[0].length) / 2);
-  const offsetY = Math.floor((4 - mat.length) / 2);
+  const startX = Math.floor((holdCanvas.width - mat[0].length * 20) / 2);
+  const startY = Math.floor((holdCanvas.height - mat.length * 20) / 2);
   holdCtx.globalAlpha = canHold ? 1 : 0.35;
   mat.forEach((row, y) => {
     row.forEach((val, x) => {
       if (val) {
         holdCtx.fillStyle = color;
-        holdCtx.fillRect((x + offsetX) * 20 + 1, (y + offsetY) * 20 + 1, 18, 18);
+        holdCtx.fillRect(startX + x * 20 + 1, startY + y * 20 + 1, 18, 18);
       }
     });
   });
