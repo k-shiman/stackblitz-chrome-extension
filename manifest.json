@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stackblitz",
-  "version": "1.0",
+  "version": "3.8.0",
   "description": "A minimalist block stacking game with themes",
   "action": {
     "default_popup": "popup.html",
